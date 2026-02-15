@@ -1,0 +1,14 @@
+# Ignorer l'environnement virtuel (TRES IMPORTANT)
+venv/
+env/
+
+# Ignorer les données lourdes (les CSV)
+data/*.csv
+*.csv
+
+# Ignorer les fichiers cache de Python
+__pycache__/
+*.pyc
+
+# Ignorer les fichiers systèmes Mac/Windows
+.DS_Store
