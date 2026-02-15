@@ -7,70 +7,71 @@ data_train = pd.read_csv(r"C:\Users\adilc\Projet_perso\NN_From_Scratch\data\trai
 data_test = pd.read_csv(r"C:\Users\adilc\Projet_perso\NN_From_Scratch\data\test.csv")
 
 
-# Building Y_train (label) and X_train (values of pixels for each image) in numpy array
+# Build Y_train (labels) and X_train (pixel values for each image) as NumPy arrays
 Y_train = data_train['label'].to_numpy()
-X_train = data_train.drop('label', axis = 1).to_numpy() / 255 #Normalization
+X_train = data_train.drop('label', axis = 1).to_numpy() / 255  # Normalization
 
-# Building X_test
-X_test = data_test.to_numpy() / 255 #Normalization
+# Build X_test
+X_test = data_test.to_numpy() / 255  # Normalization
 
-# Numbers of pixels in each images
+# Number of pixels in each image
 nb_pixels = X_train.shape[1]
 
-# Numbers of images
+# Number of images
 nb_images = X_train.shape[0]
 
-# Multi-Layer-Perceptron
+# Multi-Layer Perceptron
 def init(nb_hidden : int, nb_pixel : int) -> tuple :
     """
-        Initialize the weights and the biais
+        Initialize the weights and biases
 
         Returns:
-            the weights and the biais
+            The weights and biases
         """
-    # Weights and biais initialization
+    # Weights and biases initialization
     W1 = np.random.randn(nb_hidden, nb_pixel) * 0.01
-    W2 = np.random.randn(10, nb_hidden) * 0.01 # 10 is the number of outputs (0 to 9)
+    W2 = np.random.randn(10, nb_hidden) * 0.01  # 10 is the number of outputs (0 to 9)
     b1 = np.zeros((nb_hidden , 1))
-    b2 = np.zeros((10 , 1)) # 10 is the number of outputs (0 to 9)
+    b2 = np.zeros((10 , 1))  # 10 is the number of outputs (0 to 9)
     
     return (W1, W2, b1, b2)
 
 def forward(X : np.array, W1 : np.array, W2 : np.array, b1 : np.array, b2 : np.array) -> tuple : 
     """
-        Doing the forward pass of our neural network
+        Perform the forward pass of the neural network
 
         Returns:
-            the outputs of the first layer and the last layer
+            The outputs of the first and last layers
         """
     Z1 = np.dot(W1 , np.transpose(X)) + b1
-    A1 = np.maximum(0 , Z1) # ReLu(Z1) : first activation function
+    A1 = np.maximum(0 , Z1)  # ReLU(Z1): first activation function
     Z2 = np.dot(W2 , A1) + b2
+
     # Numerical stability
-    exp_Z2 = np.exp(Z2 - np.max(Z2, axis=0, keepdims=True)) # max become 0 (shifted version of Z2)
-    A2 = exp_Z2/np.sum(exp_Z2, axis=0, keepdims = True) # Softmax(exp_Z2) : second activation function -> give a probability distribution
+    exp_Z2 = np.exp(Z2 - np.max(Z2, axis=0, keepdims=True))  # Max becomes 0 (shifted version of Z2)
+    A2 = exp_Z2 / np.sum(exp_Z2, axis=0, keepdims = True)  # Softmax(exp_Z2): second activation function -> gives a probability distribution
     
     return (Z1, A1, Z2, A2)
 
 def one_hot(Y : np.array) -> np.array :
     """
-        Changing our Y_train to an one hot array
+        Convert Y_train into a one-hot encoded array
 
         Returns:
-            the one hot transposed array of our Y_train
+            The transposed one-hot encoded array of Y_train
         """
-    Y_one_hot = np.zeros((len(Y), 10)) # initialization of Y_one_hot
+    Y_one_hot = np.zeros((len(Y), 10))  # Initialization of Y_one_hot
     for i in range(len(Y)):
-        Y_one_hot[i][Y[i]] = 1 # Add a 1 at the position corresponding to the values in Y. Ex : if y = 2, we will have [0, 0, 1, 0, ...]
+        Y_one_hot[i][Y[i]] = 1  # Add a 1 at the position corresponding to the value in Y. Example: if y = 2, we get [0, 0, 1, 0, ...]
         
-    return np.transpose(Y_one_hot) # Return the transpose of our array to fit with A2 in the backward
+    return np.transpose(Y_one_hot)  # Return the transpose of the array to match A2 in backward propagation
 
 def backward(X : np.array, A2 : np.array, Y : np.array, A1 : np.array, W2 : np.array, Z1 : np.array, nb_images : int) -> tuple :
     """
-        Doing the backward propagation to minimize the Loss (Log-loss)
+        Perform backward propagation to minimize the Loss (Log-loss)
 
         Returns:
-            Tuple of our values to minimize the Loss
+            Tuple of gradient values used to minimize the Loss
         """
     d_Z2 = A2 - Y
     d_W2 = 1/nb_images * (np.dot(d_Z2, np.transpose(A1)))
@@ -83,10 +84,10 @@ def backward(X : np.array, A2 : np.array, Y : np.array, A1 : np.array, W2 : np.a
 
 def update(W1 : np.array, b1 : np.array, W2 : np.array, b2 : np.array, d_W1 : np.array, d_b1 : np.array, d_W2 : np.array, d_b2 : np.array, alpha : float) -> tuple:
     """
-        Update the weights and biais
+        Update the weights and biases
 
         Returns:
-            Tuple of updated weights and biais
+            Tuple of updated weights and biases
         """
     W1 = W1 - alpha * d_W1
     b1 = b1 - alpha * d_b1
@@ -98,31 +99,31 @@ def update(W1 : np.array, b1 : np.array, W2 : np.array, b2 : np.array, d_W1 : np
 
 def get_predictions(A2 : np.array) -> int:
     """
-        Get the prediction of the output of our last layer
+        Get the predictions from the output of the last layer
 
         Returns:
-            The predictions : number with the highest probability
+            The predicted class (number with the highest probability)
         """
-    return np.argmax(A2, axis = 0) # return the number with highest probability
+    return np.argmax(A2, axis = 0)  # Return the number with the highest probability
 
 def get_accuracy(predictions, Y : np.array) -> float:
     """
-        Get the accuracy
+        Compute the accuracy
 
         Returns:
-            The accuracy of our results : comparing prediction and reals values
+            The accuracy of the results by comparing predictions with true labels
         """
-    return np.sum(predictions == Y) / Y.size # return mean value where the predictions are equal to the label values
+    return np.sum(predictions == Y) / Y.size  # Return the mean of correct predictions
 
-nb_hidden = 128 # number of hidden layers
-alpha = 0.1 # learning rate
+nb_hidden = 128  # Number of neurons in the hidden layer
+alpha = 0.1  # Learning rate
 
 def gradient_descent(iterations : int):
     """
-        Do the gradient_descent to do the train
+        Perform gradient descent training
 
         Returns:
-            The weights and biais 
+            The trained weights and biases
         """
     W1, W2, b1, b2 = init(nb_hidden, nb_pixels)
     Y = one_hot(Y_train)
@@ -137,7 +138,7 @@ def gradient_descent(iterations : int):
     
     return W1, W2, b1, b2
 
-iterations = 3000 # number of iterations
+iterations = 3000  # Number of iterations
 
 W1, W2, b1, b2 = gradient_descent(iterations)
 
@@ -147,7 +148,7 @@ print("\n--- Starting final test on test.csv ---")
 # Forward propagation on test data
 _, _, _, A2_test = forward(X_test, W1, W2, b1, b2)
 
-# Convert probabilities to class labels (0-9)
+# Convert probabilities to class labels (0–9)
 predictions_test = get_predictions(A2_test)
 
 # Console preview
