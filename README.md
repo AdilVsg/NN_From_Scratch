@@ -1,4 +1,4 @@
-# MNIST-FROM-SCRATCH
+# NN-FROM-SCRATCH
 
 ![Author](https://img.shields.io/badge/Author-Adil%20CHOUKAIRE-blue)
 ![Project](https://img.shields.io/badge/Project-Computer%20Vision-blueviolet)
